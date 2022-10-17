@@ -1,7 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { User } from './../users/entities/user.entity';
 
+import { User } from './../users/entities/user.entity';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { SignupInput } from './dto';
@@ -29,10 +29,7 @@ export class AuthResolver {
 
   @Query(() => AuthResponse, { name: 'revalidate' })
   @UseGuards(JwtAuthGuard)
-  revalidate(@CurrentUser() user: User): AuthResponse {
-    console.log('revalidate, user:', user);
-
-    // return this.authService.revalidate(user.id);
-    throw new Error('not implemented');
+  revalidate(@CurrentUser(/* [ValidRoles.admin] */) user: User): AuthResponse {
+    return this.authService.revalidate(user);
   }
 }

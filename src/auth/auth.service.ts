@@ -25,9 +25,7 @@ export class AuthService {
   async signup(signupInput: SignupInput): Promise<AuthResponse> {
     const user = await this.userService.create(signupInput);
 
-    const token = this.getJwtToken(user.id);
-
-    return { token, user };
+    return { token: this.getJwtToken(user.id), user };
   }
 
   async login({ email, password }: LoginInput): Promise<AuthResponse> {
@@ -38,9 +36,7 @@ export class AuthService {
         'Credential are not valids ( email / password )',
       );
 
-    const token = this.getJwtToken(user.id);
-
-    return { token, user };
+    return { token: this.getJwtToken(user.id), user };
   }
 
   async validateUser(id: string): Promise<User> {
@@ -52,5 +48,12 @@ export class AuthService {
     delete user.password;
 
     return user;
+  }
+
+  revalidate(user: User) {
+    return {
+      user,
+      token: this.getJwtToken(user.id),
+    };
   }
 }
