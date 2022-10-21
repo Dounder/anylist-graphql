@@ -1,3 +1,4 @@
+import { SeedModule } from './seed/seed.module';
 import { ApolloDriver } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
@@ -55,6 +56,8 @@ import { UsersModule } from './users/users.module';
     UsersModule,
 
     AuthModule,
+
+    SeedModule,
   ],
   controllers: [],
   providers: [],

@@ -30,6 +30,10 @@ yarn start:dev
 npm start:dev
 ```
 
+6. open [GraphQL localhost endpoint](http://localhost:3000/graphql)
+7. Execute mutation **`"executeSeed"`**, to fill database
+8. Renew **`"JWT"`** on each login after execute step **`"7"`**
+
 ## Database connections strings
 
 ```bash
