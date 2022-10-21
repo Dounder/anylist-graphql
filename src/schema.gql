@@ -2,13 +2,6 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Item {
-  id: ID!
-  name: String!
-  quantityUnits: String
-  user: User!
-}
-
 type User {
   id: ID!
   fullName: String!
@@ -17,6 +10,14 @@ type User {
   isActive: Boolean!
   lastUpdateBy: User
   items: [Item!]!
+  itemCount: Int!
+}
+
+type Item {
+  id: ID!
+  name: String!
+  quantityUnits: String
+  user: User!
 }
 
 type AuthResponse {
