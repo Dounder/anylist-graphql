@@ -1,8 +1,10 @@
-import { Item } from './entities/item.entity';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateItemInput, UpdateItemInput } from './dto/inputs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
+import { User } from '../users/entities/user.entity';
+import { CreateItemInput, UpdateItemInput } from './dto/inputs';
+import { Item } from './entities/item.entity';
 
 @Injectable()
 export class ItemsService {
@@ -11,13 +13,15 @@ export class ItemsService {
     private readonly itemRepository: Repository<Item>,
   ) {}
 
-  async create(createItemInput: CreateItemInput): Promise<Item> {
-    const item = this.itemRepository.create(createItemInput);
+  async create(createItemInput: CreateItemInput, user: User): Promise<Item> {
+    const item = this.itemRepository.create({ ...createItemInput, user });
     return await this.itemRepository.save(item);
   }
 
-  async findAll(): Promise<Item[]> {
-    return await this.itemRepository.find({});
+  async findAll(user: User): Promise<Item[]> {
+    return await this.itemRepository.find({
+      where: { user: { id: user.id } },
+    });
   }
 
   async findOne(id: string): Promise<Item> {
