@@ -7,10 +7,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import { Repository } from 'typeorm';
-import { ValidRoles } from './../auth/enums/valid-roles.enum';
+import { QueryResult, Repository } from 'typeorm';
 
 import { SignupInput } from './../auth/dto/inputs/signup.input';
+import { ValidRoles } from './../auth/enums/valid-roles.enum';
+import { PaginationArgs, SearchArgs } from './../common/dto/args';
 import { UpdateUserInput } from './dto/update-user.input';
 import { User } from './entities/user.entity';
 
@@ -35,13 +36,25 @@ export class UsersService {
     }
   }
 
-  async findAll(roles: ValidRoles[]): Promise<User[]> {
-    if (roles.length === 0) return this.userRepository.find();
+  async findAll(
+    roles: ValidRoles[],
+    paginationArgs: PaginationArgs,
+    searchArgs: SearchArgs,
+  ): Promise<User[]> {
+    const { limit, offset } = paginationArgs;
+    const { search } = searchArgs;
 
-    return this.userRepository
+    const query = this.userRepository
       .createQueryBuilder()
-      .andWhere('ARRAY[roles] && ARRAY[:...roles]', { roles })
-      .getMany();
+      .take(limit)
+      .skip(offset);
+
+    if (roles.length === 0) return query.getMany();
+
+    if (search)
+      query.andWhere(`"fullName" ilike :name`, { name: `%${search}%` });
+
+    return query.andWhere('ARRAY[roles] && ARRAY[:roles]', { roles }).getMany();
   }
 
   async findOneByEmail(email: string): Promise<User> {

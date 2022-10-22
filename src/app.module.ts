@@ -11,6 +11,7 @@ import { join } from 'path';
 import { AuthModule } from './auth/auth.module';
 import { ItemsModule } from './items/items.module';
 import { UsersModule } from './users/users.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -58,6 +59,8 @@ import { UsersModule } from './users/users.module';
     AuthModule,
 
     SeedModule,
+
+    CommonModule,
   ],
   controllers: [],
   providers: [],

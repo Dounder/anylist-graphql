@@ -1,4 +1,3 @@
-import { ItemsService } from './../items/items.service';
 import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import {
   Args,
@@ -14,6 +13,10 @@ import { ValidRoles } from 'src/auth/enums/valid-roles.enum';
 
 import { CurrentUser } from './../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from './../auth/guards/jwt-auth.guard';
+import { PaginationArgs } from './../common/dto/args/pagination.args';
+import { SearchArgs } from './../common/dto/args/search.args';
+import { Item } from './../items/entities/item.entity';
+import { ItemsService } from './../items/items.service';
 import { RoleArg } from './dto/args/role.arg';
 import { UpdateUserInput } from './dto/update-user.input';
 import { User } from './entities/user.entity';
@@ -31,8 +34,14 @@ export class UsersResolver {
   async findAll(
     @Args() validRoles: RoleArg,
     @CurrentUser([ValidRoles.admin, ValidRoles.superUser]) user: User,
+    @Args() paginationArgs: PaginationArgs,
+    @Args() searchArgs: SearchArgs,
   ): Promise<User[]> {
-    return await this.usersService.findAll(validRoles.roles);
+    return await this.usersService.findAll(
+      validRoles.roles,
+      paginationArgs,
+      searchArgs,
+    );
   }
 
   @Query(() => User, { name: 'user' })
@@ -69,5 +78,15 @@ export class UsersResolver {
     @CurrentUser([ValidRoles.admin]) adminUser: User,
   ): Promise<number> {
     return this.itemService.getItemByUser(user);
+  }
+
+  @ResolveField(() => [Item], { name: 'items' })
+  async getItemsByUser(
+    @Parent() user: User,
+    @CurrentUser([ValidRoles.admin]) adminUser: User,
+    @Args() paginationArgs: PaginationArgs,
+    @Args() searchArgs: SearchArgs,
+  ): Promise<Item[]> {
+    return this.itemService.findAll(user, paginationArgs, searchArgs);
   }
 }

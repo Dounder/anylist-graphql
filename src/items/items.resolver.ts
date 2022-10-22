@@ -4,6 +4,8 @@ import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { User } from '../users/entities/user.entity';
 import { CurrentUser } from './../auth/decorators/current-user.decorator';
+import { PaginationArgs } from './../common/dto/args';
+import { SearchArgs } from './../common/dto/args/search.args';
 import { CreateItemInput, UpdateItemInput } from './dto/inputs';
 import { Item } from './entities/item.entity';
 import { ItemsService } from './items.service';
@@ -22,8 +24,12 @@ export class ItemsResolver {
   }
 
   @Query(() => [Item], { name: 'items' })
-  async findAll(@CurrentUser() user: User): Promise<Item[]> {
-    return await this.itemsService.findAll(user);
+  async findAll(
+    @CurrentUser() user: User,
+    @Args() pagination: PaginationArgs,
+    @Args() search: SearchArgs,
+  ): Promise<Item[]> {
+    return await this.itemsService.findAll(user, pagination, search);
   }
 
   @Query(() => Item, { name: 'item' })

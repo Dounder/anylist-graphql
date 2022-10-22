@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { User } from '../users/entities/user.entity';
+import { PaginationArgs } from './../common/dto/args';
+import { SearchArgs } from './../common/dto/args/search.args';
 import { CreateItemInput, UpdateItemInput } from './dto/inputs';
 import { Item } from './entities/item.entity';
 
@@ -18,10 +20,24 @@ export class ItemsService {
     return await this.itemRepository.save(item);
   }
 
-  async findAll(user: User): Promise<Item[]> {
-    return await this.itemRepository.find({
-      where: { user: { id: user.id } },
-    });
+  async findAll(
+    user: User,
+    pagination: PaginationArgs,
+    searchArgs: SearchArgs,
+  ): Promise<Item[]> {
+    const { limit, offset } = pagination;
+    const { search } = searchArgs;
+
+    const queryBuilder = this.itemRepository
+      .createQueryBuilder()
+      .take(limit)
+      .skip(offset)
+      .where(`"userId" = :userId`, { userId: user.id });
+
+    if (search)
+      queryBuilder.andWhere(`name ilike :name`, { name: `%${search}%` });
+
+    return queryBuilder.getMany();
   }
 
   async findOne(id: string, user: User): Promise<Item> {
