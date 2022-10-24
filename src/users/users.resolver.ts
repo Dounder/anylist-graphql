@@ -1,3 +1,5 @@
+import { ListsService } from './../lists/lists.service';
+import { List } from './../lists/entities/list.entity';
 import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import {
   Args,
@@ -28,6 +30,7 @@ export class UsersResolver {
   constructor(
     private readonly usersService: UsersService,
     private readonly itemService: ItemsService,
+    private readonly listService: ListsService,
   ) {}
 
   @Query(() => [User], { name: 'users' })
@@ -88,5 +91,14 @@ export class UsersResolver {
     @Args() searchArgs: SearchArgs,
   ): Promise<Item[]> {
     return this.itemService.findAll(user, paginationArgs, searchArgs);
+  }
+
+  @ResolveField(() => [List], { name: 'lists' })
+  async getListsByUser(
+    @Parent() user: User,
+    @CurrentUser([ValidRoles.admin]) adminUser: User,
+    @Args() paginationArgs: PaginationArgs,
+  ): Promise<Item[]> {
+    return this.listService.findAll(user, paginationArgs);
   }
 }

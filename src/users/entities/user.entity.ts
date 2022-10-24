@@ -1,3 +1,4 @@
+import { List } from './../../lists/entities/list.entity';
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 import {
   Column,
@@ -47,4 +48,8 @@ export class User {
   @OneToMany(() => Item, (item) => item.user, { lazy: true })
   // @Field(() => [Item])
   items: Item[];
+
+  @OneToMany(() => List, (list) => list.user)
+  // @Field(() => [Item])
+  lists: List[];
 }
