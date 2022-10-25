@@ -1,5 +1,3 @@
-import { ListsService } from './../lists/lists.service';
-import { List } from './../lists/entities/list.entity';
 import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import {
   Args,
@@ -15,10 +13,11 @@ import { ValidRoles } from 'src/auth/enums/valid-roles.enum';
 
 import { CurrentUser } from './../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from './../auth/guards/jwt-auth.guard';
-import { PaginationArgs } from './../common/dto/args/pagination.args';
-import { SearchArgs } from './../common/dto/args/search.args';
+import { PaginationArgs, SearchArgs } from './../common/dto/args';
 import { Item } from './../items/entities/item.entity';
 import { ItemsService } from './../items/items.service';
+import { List } from './../lists/entities/list.entity';
+import { ListsService } from './../lists/lists.service';
 import { RoleArg } from './dto/args/role.arg';
 import { UpdateUserInput } from './dto/update-user.input';
 import { User } from './entities/user.entity';
@@ -80,7 +79,7 @@ export class UsersResolver {
     @Parent() user: User,
     @CurrentUser([ValidRoles.admin]) adminUser: User,
   ): Promise<number> {
-    return this.itemService.getItemByUser(user);
+    return await this.itemService.getItemByUser(user);
   }
 
   @ResolveField(() => [Item], { name: 'items' })
@@ -90,7 +89,7 @@ export class UsersResolver {
     @Args() paginationArgs: PaginationArgs,
     @Args() searchArgs: SearchArgs,
   ): Promise<Item[]> {
-    return this.itemService.findAll(user, paginationArgs, searchArgs);
+    return await this.itemService.findAll(user, paginationArgs, searchArgs);
   }
 
   @ResolveField(() => [List], { name: 'lists' })
@@ -98,7 +97,16 @@ export class UsersResolver {
     @Parent() user: User,
     @CurrentUser([ValidRoles.admin]) adminUser: User,
     @Args() paginationArgs: PaginationArgs,
-  ): Promise<Item[]> {
-    return this.listService.findAll(user, paginationArgs);
+    @Args() searchArgs: SearchArgs,
+  ): Promise<List[]> {
+    return await this.listService.findAll(user, paginationArgs, searchArgs);
+  }
+
+  @ResolveField(() => Int, { name: 'listCount' })
+  async getListsCount(
+    @Parent() user: User,
+    @CurrentUser([ValidRoles.admin]) adminUser: User,
+  ): Promise<number> {
+    return await this.listService.getListsByUser(user);
   }
 }

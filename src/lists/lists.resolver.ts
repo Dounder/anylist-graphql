@@ -1,9 +1,9 @@
-import { PaginationArgs } from './../common/dto/args/pagination.args';
-import { UseGuards, ParseUUIDPipe } from '@nestjs/common';
-import { Args, Int, Mutation, Query, Resolver, ID } from '@nestjs/graphql';
+import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
+import { Args, ID, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 
 import { CurrentUser } from './../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from './../auth/guards/jwt-auth.guard';
+import { PaginationArgs, SearchArgs } from './../common/dto/args';
 import { User } from './../users/entities/user.entity';
 import { CreateListInput, UpdateListInput } from './dto/inputs';
 import { List } from './entities/list.entity';
@@ -15,39 +15,47 @@ export class ListsResolver {
   constructor(private readonly listsService: ListsService) {}
 
   @Mutation(() => List)
-  createList(
+  async createList(
     @Args('createListInput') createListInput: CreateListInput,
     @CurrentUser() user: User,
   ): Promise<List> {
-    return this.listsService.create(createListInput, user);
+    return await this.listsService.create(createListInput, user);
   }
 
   @Query(() => [List], { name: 'lists' })
-  findAll(
+  async findAll(
     @CurrentUser() user: User,
     @Args() pagination: PaginationArgs,
+    @Args() search: SearchArgs,
   ): Promise<List[]> {
-    return this.listsService.findAll(user, pagination);
+    return await this.listsService.findAll(user, pagination, search);
   }
 
   @Query(() => List, { name: 'list' })
-  findOne(
+  async findOne(
     @Args('id', { type: () => ID }, ParseUUIDPipe) id: string,
     @CurrentUser() user: User,
   ) {
-    return this.listsService.findOne(id, user);
+    return await this.listsService.findOne(id, user);
   }
 
   @Mutation(() => List)
-  updateList(
+  async updateList(
     @Args('updateListInput') updateListInput: UpdateListInput,
     @CurrentUser() user: User,
   ) {
-    return this.listsService.update(updateListInput.id, updateListInput, user);
+    return await this.listsService.update(
+      updateListInput.id,
+      updateListInput,
+      user,
+    );
   }
 
   @Mutation(() => List)
-  removeList(@Args('id', { type: () => Int }, ParseUUIDPipe) id: string) {
-    return this.listsService.remove(id);
+  async removeList(
+    @Args('id', { type: () => Int }, ParseUUIDPipe) id: string,
+    @CurrentUser() user: User,
+  ) {
+    return await this.listsService.remove(id, user);
   }
 }

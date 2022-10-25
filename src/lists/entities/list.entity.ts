@@ -19,7 +19,6 @@ export class List {
 
   @Column({ type: 'text', nullable: false })
   @Field(() => String)
-  @Min(1)
   name: string;
 
   // relacion, index('userId_list_IX')

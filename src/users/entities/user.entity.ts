@@ -49,7 +49,7 @@ export class User {
   // @Field(() => [Item])
   items: Item[];
 
-  @OneToMany(() => List, (list) => list.user)
+  @OneToMany(() => List, (list) => list.user, { lazy: true })
   // @Field(() => [Item])
   lists: List[];
 }

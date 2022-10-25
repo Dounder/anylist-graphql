@@ -1,4 +1,5 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { SearchArgs } from './../common/dto/args/search.args';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -9,8 +10,6 @@ import { List } from './entities/list.entity';
 
 @Injectable()
 export class ListsService {
-  private logger = new Logger('listsService');
-
   constructor(
     @InjectRepository(List)
     private readonly listRepository: Repository<List>,
@@ -21,14 +20,21 @@ export class ListsService {
     return await this.listRepository.save(list);
   }
 
-  async findAll(user: User, pagination: PaginationArgs): Promise<List[]> {
+  async findAll(
+    user: User,
+    pagination: PaginationArgs,
+    searchArgs: SearchArgs,
+  ): Promise<List[]> {
     const { limit, offset } = pagination;
+    const { search } = searchArgs;
 
     const query = this.listRepository
       .createQueryBuilder()
       .take(limit)
       .skip(offset)
       .where('"userId" = :userId', { userId: user.id });
+
+    if (search) query.andWhere(`name ilike :name`, { name: `%${search}%` });
 
     return query.getMany();
   }
@@ -50,11 +56,23 @@ export class ListsService {
     user: User,
   ): Promise<List> {
     await this.findOne(id, user);
-    const list = await this.listRepository.preload(updateListInput);
+    const list = await this.listRepository.preload({
+      ...updateListInput,
+      user,
+    });
+    if (!list) throw new NotFoundException(`List with id ${id}, not found`);
     return await this.listRepository.save(list);
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} list`;
+  async remove(id: string, user: User): Promise<List> {
+    const list = await this.findOne(id, user);
+
+    await this.listRepository.remove(list);
+
+    return { ...list, id };
+  }
+
+  async getListsByUser(user: User): Promise<number> {
+    return await this.listRepository.countBy({ user: { id: user.id } });
   }
 }
