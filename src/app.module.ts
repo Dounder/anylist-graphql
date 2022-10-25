@@ -13,6 +13,7 @@ import { ItemsModule } from './items/items.module';
 import { UsersModule } from './users/users.module';
 import { CommonModule } from './common/common.module';
 import { ListsModule } from './lists/lists.module';
+import { ListItemModule } from './list-item/list-item.module';
 
 @Module({
   imports: [
@@ -64,6 +65,8 @@ import { ListsModule } from './lists/lists.module';
     CommonModule,
 
     ListsModule,
+
+    ListItemModule,
   ],
   controllers: [],
   providers: [],

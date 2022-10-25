@@ -1,12 +1,17 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ItemsService } from 'src/items/items.service';
 import { Repository } from 'typeorm';
 
 import { Item } from './../items/entities/item.entity';
+import { ListItem } from './../list-item/entities/list-item.entity';
+import { ListItemService } from './../list-item/list-item.service';
+import { List } from './../lists/entities/list.entity';
+import { ListsService } from './../lists/lists.service';
 import { User } from './../users/entities/user.entity';
 import { UsersService } from './../users/users.service';
-import { SEED_ITEMS, SEED_USERS } from './data/seed-data';
+import { SEED_ITEMS, SEED_LISTS, SEED_USERS } from './data/seed-data';
 
 @Injectable()
 export class SeedService {
@@ -18,7 +23,15 @@ export class SeedService {
     private readonly itemRepository: Repository<Item>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(ListItem)
+    private readonly listItemRepository: Repository<ListItem>,
+    @InjectRepository(List)
+    private readonly listRepository: Repository<List>,
+
     private readonly userService: UsersService,
+    private readonly itemService: ItemsService,
+    private readonly listService: ListsService,
+    private readonly listItemService: ListItemService,
   ) {
     this.isProd = configService.get('STATE') === 'prod';
   }
@@ -36,10 +49,29 @@ export class SeedService {
     //* Create items
     await this.loadItems(user);
 
+    //* Create lists
+    const list = await this.loadLists(user);
+
+    //* Create lists items
+    const items = await this.itemService.findAll(
+      user,
+      { limit: 15, offset: 0 },
+      {},
+    );
+    await this.loadListItems(list, items);
+
     return true;
   }
 
   async deleteDatabase() {
+    //! Delete listItems
+    await this.listItemRepository
+      .createQueryBuilder()
+      .delete()
+      .where({})
+      .execute();
+    //! Delete lists
+    await this.listRepository.createQueryBuilder().delete().where({}).execute();
     //! Delete items
     await this.itemRepository.createQueryBuilder().delete().where({}).execute();
     //! Delete users
@@ -53,9 +85,27 @@ export class SeedService {
   }
 
   async loadItems(user: User) {
-    const itemsToCreate = this.itemRepository.create(
-      SEED_ITEMS.map((item) => ({ ...item, user })),
+    const itemsToCreate = SEED_ITEMS.map((item) =>
+      this.itemService.create(item, user),
     );
-    await this.itemRepository.save(itemsToCreate);
+    await Promise.all(itemsToCreate);
+  }
+
+  async loadLists(user: User): Promise<List> {
+    const lists = SEED_LISTS.map((list) => this.listService.create(list, user));
+    const [list] = await Promise.all(lists);
+    return list;
+  }
+
+  async loadListItems(list: List, items: Item[]) {
+    const listItems = items.map((item) =>
+      this.listItemService.create({
+        quantity: Math.round(Math.random() * 10),
+        completed: Math.round(Math.random() * 1) === 0 ? false : true,
+        listId: list.id,
+        itemId: item.id,
+      }),
+    );
+    await Promise.all(listItems);
   }
 }
