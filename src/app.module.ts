@@ -1,4 +1,3 @@
-import { SeedModule } from './seed/seed.module';
 import { ApolloDriver } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
@@ -9,11 +8,12 @@ import { ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core';
 import { join } from 'path';
 
 import { AuthModule } from './auth/auth.module';
-import { ItemsModule } from './items/items.module';
-import { UsersModule } from './users/users.module';
 import { CommonModule } from './common/common.module';
-import { ListsModule } from './lists/lists.module';
+import { ItemsModule } from './items/items.module';
 import { ListItemModule } from './list-item/list-item.module';
+import { ListsModule } from './lists/lists.module';
+import { SeedModule } from './seed/seed.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -75,13 +75,4 @@ import { ListItemModule } from './list-item/list-item.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {
-  constructor() {
-    console.log('STATE:', process.env.STATE);
-    console.log('host:', process.env.DB_HOST);
-    console.log('port:', +process.env.DB_PORT);
-    console.log('username:', process.env.DB_USERNAME);
-    console.log('password:', process.env.DB_PASSWORD);
-    console.log('database:', process.env.DB_NAME);
-  }
-}
+export class AppModule {}
