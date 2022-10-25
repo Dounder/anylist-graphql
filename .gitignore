@@ -39,3 +39,4 @@ postgres/
 
 # .env
 .env
+.env.prod
